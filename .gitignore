@@ -52,3 +52,6 @@ docs/_build/
 # Models and data
 models/
 data/
+
+# vscode
+.vscode
