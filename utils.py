@@ -8,7 +8,7 @@ def createDirectoryIfNotExists(dirname):
 
 
 def returnClassPaths(className, rootDir="data"):
-    classPathJPG = os.path.join(rootDir, className, "*.jpg")
+    classPathJPG = os.path.join(rootDir, className, "*.j pg")
     classPathJPEG = os.path.join(rootDir, className, "*.jpeg")
     classPathPNG = os.path.join(rootDir, className, "*.png")
     classPathBMP = os.path.join(rootDir, className, "*.bmp")
