@@ -1,4 +1,5 @@
 from icrawler.builtin import GoogleImageCrawler
+from utils import createDirectoryIfNotExists
 import argparse
 import os
 
@@ -11,11 +12,7 @@ class ImageDownloader:
 
     def __init__(self, output_directory="data") -> None:
         self.output_directory = output_directory
-        self.createDirectoryIfNotExists(self.output_directory)
-
-    def createDirectoryIfNotExists(self, dirname):
-        if not os.path.exists(dirname):
-            os.makedirs(dirname)
+        createDirectoryIfNotExists(self.output_directory)
 
     def downloadByName(self, name, number=100):
         download_path = os.path.join(self.output_directory, name)
@@ -25,7 +22,7 @@ class ImageDownloader:
                 print(name, "Directory already contains at least 100 images")
                 return
         else:
-            self.createDirectoryIfNotExists(download_path)
+            createDirectoryIfNotExists(download_path)
         google_crawler = GoogleImageCrawler(
             feeder_threads=1,
             parser_threads=2,
@@ -36,7 +33,8 @@ class ImageDownloader:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="downloads some images from google")
+    parser = argparse.ArgumentParser(
+        description="downloads some images from google")
     parser.add_argument(
         "--number", type=int, help="number of images to download", default=20
     )
