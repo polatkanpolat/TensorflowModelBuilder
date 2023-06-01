@@ -16,13 +16,7 @@ class ImageDownloader:
 
     def downloadByName(self, name, number=100):
         download_path = os.path.join(self.output_directory, name)
-        if os.path.exists(download_path):
-            print(name, "Directory already exists")
-            if len(os.listdir(download_path)) >= 100:
-                print(name, "Directory already contains at least 100 images")
-                return
-        else:
-            createDirectoryIfNotExists(download_path)
+        createDirectoryIfNotExists(download_path)
         google_crawler = GoogleImageCrawler(
             feeder_threads=1,
             parser_threads=2,
@@ -36,7 +30,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="downloads some images from google")
     parser.add_argument(
-        "--number", type=int, help="number of images to download", default=20
+        "--number", type=int, help="number of images to download", default=100
     )
     parser.add_argument("name", help="description of images to download")
     args = parser.parse_args()
