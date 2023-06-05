@@ -1,6 +1,6 @@
 import tensorflow as tf
 import os
-from tensorflow.keras.metrics import Accuracy
+from tensorflow.keras.metrics import Accuracy, CategoricalAccuracy
 from datadownloader import ImageDownloader
 from utils import createDatasetFromClassNames, createDirectoryIfNotExists
 from models import TFModel
@@ -13,7 +13,8 @@ class ModelBuilder:
                  model_name="InceptionV3",
                  size_per_class=100,
                  input_shape=(224, 224, 3),
-                 split_size=(0.7, 0.2, 0.1)) -> None:
+                 split_size=(0.7, 0.2, 0.1),
+                 BATCH_SIZE=4) -> None:
         self.split_size = split_size
         # assert sum(self.split_size) == 1, "split size sum must be 1"
         self.experiment_name = experiment_name
@@ -21,6 +22,7 @@ class ModelBuilder:
         self.model_name = model_name
         self.size_per_class = size_per_class
         self.input_shape = input_shape
+        self.BATCH_SIZE = BATCH_SIZE
         self.model = None
         self.train_data = None
         self.test_data = None
@@ -31,9 +33,10 @@ class ModelBuilder:
 
     def Prepare(self):
         print("Preparing Builder")
-        self.DownloadImages()
+        # self.DownloadImages()
         self.GetDataset()
         self.GetModel()
+        self.model.GetModelInfo()
         print("Preparation Completed")
 
     def DownloadImages(self):
@@ -44,6 +47,12 @@ class ModelBuilder:
         print("Images Downloaded")
 
     def GetDataset(self):
+        def prepare_dataset(ds, shuffle=True):
+            if shuffle:
+                ds = ds.shuffle(buffer_size=500)
+            ds = ds.batch(self.BATCH_SIZE)
+            # ds = ds.prefetch(buffer_size=AUTOTUNE)
+            return ds
         print("Prepering Dataset")
         data = createDatasetFromClassNames(self.classes)
         train_size = int(len(data) * self.split_size[0])
@@ -52,6 +61,9 @@ class ModelBuilder:
         self.train_data = data.take(train_size)
         self.val_data = data.skip(train_size).take(val_size)
         self.test_data = data.skip(train_size+val_size).take(test_size)
+        self.train_data = prepare_dataset(self.train_data)
+        self.test_data = prepare_dataset(self.test_data)
+        self.val_data = prepare_dataset(self.val_data)
         print("Dataset is Ready")
 
     def GetModel(self):
@@ -67,7 +79,7 @@ class ModelBuilder:
             self.model.Compile()
             print("Train is starting ...")
             self.history = self.model.model.fit(
-                self.train_data, epochs=2, batch_size=4, validation_data=self.val_data)
+                self.train_data, epochs=2, batch_size=self.BATCH_SIZE, validation_data=self.val_data)
             print("Train Completed")
 
     def Evaluate(self):
@@ -75,7 +87,7 @@ class ModelBuilder:
             print("Error!. Model has not been created or trained")
         else:
             print("Evaluation is starting ...")
-            acc = Accuracy()
+            acc = CategoricalAccuracy()
             for batch in self.test_data.as_numpy_iterator():
                 X, y = batch
                 yhat = self.model.model.predict(X)

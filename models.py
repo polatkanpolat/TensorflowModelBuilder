@@ -66,8 +66,7 @@ class TFModel:
 
     def Compile(self):
         self.model.compile(optimizer=tf.keras.optimizers.Adam(0.001),
-                           loss='categorical_crossentropy',
-                           metrics=['accuracy', tf.keras.metrics.AUC()])
+                           loss='categorical_crossentropy')
 
     def GetModelInfo(self):
         print(
